@@ -1,0 +1,10 @@
+package templates
+
+templ Hello(s string) {
+	<div>Hello { s }</div>
+	<div>This is just another line</div>
+}
+
+templ HelloIndex(s string){
+    @Base(Hello(s))
+}
