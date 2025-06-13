@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/TylerTwoForks/typesalot/internal/webserver/handlers"
 	"github.com/TylerTwoForks/typesalot/web/templates"
 
 	"github.com/a-h/templ"
@@ -32,7 +31,7 @@ func EchoServer() *echo.Echo {
 
 	//base route. this sholud return whatever template we decide for the home page. Possibly a login page.
 	e.GET("/", func(c echo.Context) error {
-		return Render(c, 200, templates.HelloIndex("Tyler Edmonds"))
+		return Render(c, 200, templates.Playground())
 	})
 
 	return e
@@ -48,7 +47,7 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 func echoRoutes(e *echo.Echo) {
 	//grouping routes
 	rg := e.Group("/") //route group (rg) - this is the default group.
-	eh := handlers.EntryH{}
+	eh := EntryH{}
 	eh.NewHandler().EntryRoutes(rg)
 	/*
 		 	lr := &repos.LaborRepo{DB: c}

@@ -1,0 +1,82 @@
+package templates
+
+templ playground() {
+	<div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
+		<div class="row">
+			<div class="col-12 d-flex justify-content-center flex-column align-items-center">
+				<div id="textDisplay" class="mb-3 text-center" style="width: 80%; height: 50px; overflow: hidden; white-space: nowrap;">
+					<span id="pastText" style="color: #6c757d;"></span>
+					<span id="currentText" style="font-weight: bold;"></span>
+					<span id="futureText"></span>
+				</div>
+				<input
+					type="text"
+					class="form-control w-100"
+					style="width: 30%;"
+					id="typingInput"
+					placeholder="Start typing..."
+				/>
+			</div>
+		</div>
+	</div>
+	<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputField = document.getElementById('typingInput');
+            const pastTextElement = document.getElementById('pastText');
+            const currentTextElement = document.getElementById('currentText');
+            const futureTextElement = document.getElementById('futureText');
+            let placeholderRemoved = false;
+            
+            // Sample text - you can replace this with your dictionary later
+            const sampleText = "The quick brown fox jumps over the lazy dog. Programming is the process of creating a set of instructions that tell a computer how to perform a task. Creative thinking is the ability to consider something in a new way. Innovation distinguishes between a leader and a follower. Education is the most powerful weapon which you can use to change the world.";
+            
+            const words = sampleText.split(' ');
+            const visibleWordCount = 10;
+            let currentWordIndex = 0;
+            
+            // Initial display setup
+            updateTextDisplay();
+            
+            function updateTextDisplay() {
+                // Past text (typed words)
+                pastTextElement.textContent = words.slice(0, currentWordIndex).join(' ') + ' ';
+                
+                // Current word (word to type now)
+                currentTextElement.textContent = words[currentWordIndex] || '';
+                
+                // Future text (upcoming words)
+                const futureWords = words.slice(currentWordIndex + 1, currentWordIndex + visibleWordCount);
+                futureTextElement.textContent = ' ' + futureWords.join(' ');
+            }
+            
+            inputField.addEventListener('keydown', function(event) {
+                // Check if the pressed key is a space (keyCode 32)
+                if (event.key === ' ' || event.keyCode === 32) {
+                    event.preventDefault(); // Prevent the default space behavior
+                    
+                    // Check if the typed word matches the current word
+                    const typedWord = this.value.trim();
+                    const currentWord = words[currentWordIndex];
+                    
+                    if (typedWord === currentWord) {
+                        // Move to next word
+                        currentWordIndex++;
+                        updateTextDisplay();
+                    }
+                    
+                    this.value = ''; // Clear the input field
+                    
+                    // Remove placeholder after first space if not already removed
+                    if (!placeholderRemoved) {
+                        this.placeholder = '';
+                        placeholderRemoved = true;
+                    }
+                }
+            });
+        });
+    </script>
+}
+
+templ Playground() {
+	@Base(playground())
+}

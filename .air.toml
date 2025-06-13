@@ -3,8 +3,8 @@
 [build]
 # pre_cmd = ["make air-refresh"]
 # cmd = "templ generate"
-cmd = "go build -o ./tmp/main"
-bin = "./tmp/main"
+bin = "./tmp/main" 
+cmd = "templ generate; go build -o ./tmp/main" 
 delay = 1000 
 exclude_dir = ["tmp", "vendor", "node_modules", "dist"] 
 exclude_regex = [".*_templ.go"] 
