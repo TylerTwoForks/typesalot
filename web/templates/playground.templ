@@ -3,78 +3,164 @@ package templates
 templ playground() {
 	<div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
 		<div class="row">
-			<div class="col-12 d-flex justify-content-center flex-column align-items-center">
-				<div id="textDisplay" class="mb-3 text-center" style="width: 80%; height: 50px; overflow: hidden; white-space: nowrap;">
+			<div class="col-12 d-flex flex-column align-items-center">
+				<div
+					id="textDisplay"
+					class="mb-3 text-truncate text-nowrap overflow-hidden d-block"
+					style="width: 500px; min-width:500px; height: 50px;"
+				>
 					<span id="pastText" style="color: #6c757d;"></span>
 					<span id="currentText" style="font-weight: bold;"></span>
 					<span id="futureText"></span>
 				</div>
-				<input
-					type="text"
-					class="form-control w-100"
-					style="width: 30%;"
-					id="typingInput"
-					placeholder="Start typing..."
-				/>
+				<input type="text" style="width:300px; min-width:300px;" id="typingInput" placeholder="Start typing..."/>
 			</div>
 		</div>
 	</div>
 	<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputField = document.getElementById('typingInput');
-            const pastTextElement = document.getElementById('pastText');
-            const currentTextElement = document.getElementById('currentText');
-            const futureTextElement = document.getElementById('futureText');
-            let placeholderRemoved = false;
-            
-            // Sample text - you can replace this with your dictionary later
-            const sampleText = "The quick brown fox jumps over the lazy dog. Programming is the process of creating a set of instructions that tell a computer how to perform a task. Creative thinking is the ability to consider something in a new way. Innovation distinguishes between a leader and a follower. Education is the most powerful weapon which you can use to change the world.";
-            
-            const words = sampleText.split(' ');
-            const visibleWordCount = 10;
-            let currentWordIndex = 0;
-            
-            // Initial display setup
-            updateTextDisplay();
-            
-            function updateTextDisplay() {
-                // Past text (typed words)
-                pastTextElement.textContent = words.slice(0, currentWordIndex).join(' ') + ' ';
-                
-                // Current word (word to type now)
-                currentTextElement.textContent = words[currentWordIndex] || '';
-                
-                // Future text (upcoming words)
-                const futureWords = words.slice(currentWordIndex + 1, currentWordIndex + visibleWordCount);
-                futureTextElement.textContent = ' ' + futureWords.join(' ');
+    class FixedQueue {
+        constructor(limit) {
+            this.limit = limit;
+            this.queue = [];
+        }
+
+        add(item) {
+            if (this.queue.length >= this.limit) {
+                this.queue.shift();  // remove the oldest (first) item
             }
-            
-            inputField.addEventListener('keydown', function(event) {
-                // Check if the pressed key is a space (keyCode 32)
-                if (event.key === ' ' || event.keyCode === 32) {
-                    event.preventDefault(); // Prevent the default space behavior
-                    
-                    // Check if the typed word matches the current word
-                    const typedWord = this.value.trim();
-                    const currentWord = words[currentWordIndex];
-                    
-                    if (typedWord === currentWord) {
-                        // Move to next word
-                        currentWordIndex++;
-                        updateTextDisplay();
-                    }
-                    
-                    this.value = ''; // Clear the input field
-                    
-                    // Remove placeholder after first space if not already removed
-                    if (!placeholderRemoved) {
-                        this.placeholder = '';
-                        placeholderRemoved = true;
-                    }
+            this.queue.push(item); // add the new item
+        }
+
+        get items() {
+            return this.queue;
+        }
+    }
+
+    const qwertyToHDP = {
+        'KeyQ': 'f', 'KeyW': 'p', 'KeyE': 'd', 'KeyR': 'l', 'KeyT': 'x', 'KeyY': ';', 'KeyU': 'u', 'KeyI': 'o', 'KeyO': 'y', 'KeyP': 'b', 'Backslash': 'z',
+        'KeyA': 's', 'KeyS': 'n', 'KeyD': 't', 'KeyF': 'h', 'KeyG': 'k', 'KeyH': ',', 'KeyJ': 'a', 'KeyK': 'e', 'KeyL': 'i', 'Semicolon': 'c', 'Quote': 'q',
+        'ShiftLeft': '\\', 'KeyZ': 'v', 'KeyX': 'w', 'KeyC': 'g', 'KeyV': 'm', 'KeyB': 'j', 'KeyN': '-', 'KeyM': '.', 'Comma': '\'', 'Period': '=', 'Slash': '/',
+        'ArrowRight':'r'
+    };
+
+    const inputField = document.getElementById('typingInput');
+
+    let shiftDown = false;
+    let shiftTapTimer = null;
+    let shiftWasHeld = false;
+
+    inputField.addEventListener("focus", () => {
+        inputField.addEventListener("keydown", handleKeyDown);
+        inputField.addEventListener("keyup", handleKeyUp);
+    });
+
+    function handleKeyDown(e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        console.log("event.code():: ", e.code)
+        console.log("event.code():: ", e.key)
+        console.log("event.code():: ", e.keyCode)
+
+        // Detect shift key down
+        if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+            if (!shiftDown) {
+                shiftDown = true;
+                shiftWasHeld = false;
+                shiftTapTimer = setTimeout(() => {
+                    shiftWasHeld = true;
+                }, 150); // holding longer than 150ms is "hold"
+            }
+            return;
+        }
+
+        if (qwertyToHDP[e.code]) {
+            e.preventDefault();
+            let char = qwertyToHDP[e.code];
+            if (shiftDown && shiftWasHeld && char.length === 1) {
+                char = char.toUpperCase();
+            }
+            inputField.value += char;
+        }
+    }
+
+    function handleKeyUp(e) {
+        // Shift released
+        if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+            clearTimeout(shiftTapTimer);
+
+            if (!shiftWasHeld) {
+                // Shift was tapped → do something special (or nothing)
+                // Example: add literal '^' or some mapped char
+                // inputField.value += '^'; // optional tap-character
+                inputField.value += qwertyToHDP[e.code]
+            }
+
+            shiftDown = false;
+            shiftWasHeld = false;
+            return;
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputField = document.getElementById('typingInput');
+        const pastTextElement = document.getElementById('pastText');
+        const currentTextElement = document.getElementById('currentText');
+        const futureTextElement = document.getElementById('futureText');
+        let placeholderRemoved = false;
+
+        // Sample text - you can replace this with your dictionary later
+        const sampleText = "sink think neck stack stink sneak snick snack knack tick thick niche ant east seat site sake shin skin hint sent ask skate snake taken knits skein aches chest cheat teach kite knit sane sect secta ink ski ace teens sheet heat satin hasten sake sink stake case sheik keen";
+
+        const words = sampleText.split(' ');
+        const visibleWordCount = 10;
+        let currentWordIndex = 0;
+
+        //list of previous words.  setting it to 3 here, can probably be editable. 
+        const prevWords = new FixedQueue(6);
+
+        // Initial display setup
+        updateTextDisplay();
+
+        function updateTextDisplay() {
+            // Past text (typed words)
+            // pastTextElement.textContent = words.slice(currentWordIndex - 2, currentWordIndex).join(' ') + ' ';
+            pastTextElement.textContent = prevWords.queue.join(' ') || '';
+
+            // Current word (word to type now)
+            let cw = words[currentWordIndex]
+            currentTextElement.textContent = cw || '';
+            prevWords.add(cw);
+
+            // Future text (upcoming words)
+            const futureWords = words.slice(currentWordIndex + 1);
+            futureTextElement.textContent = ' ' + futureWords.join(' ');
+            // futureTextElement.textContent = sampleText
+        }
+
+        inputField.addEventListener('keydown', function (event) {
+            // Check if the pressed key is a space (keyCode 32)
+            if (event.key === ' ' || event.keyCode === 32) {
+                event.preventDefault(); // Prevent the default space behavior
+
+                // Check if the typed word matches the current word
+                const typedWord = this.value.trim();
+                const currentWord = words[currentWordIndex];
+
+                if (typedWord === currentWord) {
+                    // Move to next word
+                    currentWordIndex++;
+                    updateTextDisplay();
                 }
-            });
+
+                this.value = ''; // Clear the input field
+
+                // Remove placeholder after first space if not already removed
+                if (!placeholderRemoved) {
+                    this.placeholder = '';
+                    placeholderRemoved = true;
+                }
+            }
         });
-    </script>
+    });
+</script>
 }
 
 templ Playground() {
