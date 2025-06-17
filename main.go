@@ -21,6 +21,7 @@ func main() {
 	).Level(zerolog.TraceLevel).With().Timestamp().Caller().Logger()
 
 	e := webserver.EchoServer()
+	e.Static("/assets", "web/assets")
 
 	go func() {
 		if err := e.Start(":1323"); err != nil {

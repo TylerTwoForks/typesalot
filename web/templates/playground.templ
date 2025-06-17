@@ -1,23 +1,35 @@
 package templates
 
 templ playground() {
-	<div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
-		<div class="row">
-			<div class="col-12 d-flex flex-column align-items-center">
-				<div
-					id="textDisplay"
-					class="mb-3 text-truncate text-nowrap overflow-hidden d-block"
-					style="width: 500px; min-width:500px; height: 50px;"
-				>
-					<span id="pastText" style="color: #6c757d;"></span>
-					<span id="currentText" style="font-weight: bold;"></span>
-					<span id="futureText"></span>
-				</div>
-				<input type="text" style="width:300px; min-width:300px;" id="typingInput" placeholder="Start typing..."/>
-			</div>
-		</div>
-	</div>
-	<script>
+<br />
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle ms-3" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Layout
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Hands Down Promethium</a></li>
+        <li><a class="dropdown-item" href="#">Colemak-DH</a></li>
+        <li><a class="dropdown-item" href="#">Dvorak</a></li>
+    </ul>
+</div>
+<div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
+    <div class="row">
+        <div class="col-12 d-flex flex-column align-items-center">
+            <div id="textDisplay" class="mb-3 text-truncate text-nowrap overflow-hidden d-block"
+                style="width: 500px; min-width:500px; height: 50px;">
+                <span id="pastText" style="color: #6c757d;"></span>
+                <span id="currentText" style="font-weight: bold;"></span>
+                <span id="futureText"></span>
+            </div>
+            <input type="text" style="width:300px; min-width:300px;" id="typingInput" placeholder="Start typing..." />
+            <br>
+            <p id="wpmDisplay">WPM: 0</p>
+            <img style="padding-top: 7rem;" src="/assets/hands-down-promethium.webp" />
+        </div>
+    </div>
+</div>
+<script>
     class FixedQueue {
         constructor(limit) {
             this.limit = limit;
@@ -40,7 +52,7 @@ templ playground() {
         'KeyQ': 'f', 'KeyW': 'p', 'KeyE': 'd', 'KeyR': 'l', 'KeyT': 'x', 'KeyY': ';', 'KeyU': 'u', 'KeyI': 'o', 'KeyO': 'y', 'KeyP': 'b', 'Backslash': 'z',
         'KeyA': 's', 'KeyS': 'n', 'KeyD': 't', 'KeyF': 'h', 'KeyG': 'k', 'KeyH': ',', 'KeyJ': 'a', 'KeyK': 'e', 'KeyL': 'i', 'Semicolon': 'c', 'Quote': 'q',
         'ShiftLeft': '\\', 'KeyZ': 'v', 'KeyX': 'w', 'KeyC': 'g', 'KeyV': 'm', 'KeyB': 'j', 'KeyN': '-', 'KeyM': '.', 'Comma': '\'', 'Period': '=', 'Slash': '/',
-        'ArrowRight':'r'
+        'ArrowRight': 'r'
     };
 
     const inputField = document.getElementById('typingInput');
@@ -48,13 +60,46 @@ templ playground() {
     let shiftDown = false;
     let shiftTapTimer = null;
     let shiftWasHeld = false;
+    let startTime = null;
+    let endTime = null;
+    let hasStarted = false;
+    let charCount = 0;
+
+
+    const sampleText = "sink think neck stack stink sneak snick snack knack tick thick niche ant east seat site sake shin skin hint sent ask skate snake taken knits skein aches chest cheat teach kite knit sane sect secta ink ski ace teens sheet heat satin hasten sake sink stake case sheik keen";
+    const words = shuffleArray([...sampleText.split(' ')]);
 
     inputField.addEventListener("focus", () => {
         inputField.addEventListener("keydown", handleKeyDown);
         inputField.addEventListener("keyup", handleKeyUp);
     });
 
+    function wpmCounter() {
+        if (!hasStarted) {
+            startTime = new Date();
+            hasStarted = true;
+        }
+
+        if (charCount >= 10) { // arbitrary threshold to calculate
+            endTime = new Date();
+
+            const timeInMinutes = (endTime - startTime) / 1000 / 60;
+            const wpm = (charCount / 5) / timeInMinutes;
+            const wpmDisplay = document.getElementById('wpmDisplay');
+            wpmDisplay.textContent = `WPM: ${wpm.toFixed(2)}`;
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]]; // Swap
+        }
+        return array;
+    }
+
     function handleKeyDown(e) {
+        wpmCounter();
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         console.log("event.code():: ", e.code)
         console.log("event.code():: ", e.key)
@@ -78,10 +123,10 @@ templ playground() {
             if (shiftDown && shiftWasHeld && char.length === 1) {
                 char = char.toUpperCase();
             }
+            charCount++;
             inputField.value += char;
         }
     }
-
     function handleKeyUp(e) {
         // Shift released
         if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
@@ -99,6 +144,7 @@ templ playground() {
             return;
         }
     }
+
     document.addEventListener('DOMContentLoaded', function () {
         const inputField = document.getElementById('typingInput');
         const pastTextElement = document.getElementById('pastText');
@@ -107,9 +153,7 @@ templ playground() {
         let placeholderRemoved = false;
 
         // Sample text - you can replace this with your dictionary later
-        const sampleText = "sink think neck stack stink sneak snick snack knack tick thick niche ant east seat site sake shin skin hint sent ask skate snake taken knits skein aches chest cheat teach kite knit sane sect secta ink ski ace teens sheet heat satin hasten sake sink stake case sheik keen";
 
-        const words = sampleText.split(' ');
         const visibleWordCount = 10;
         let currentWordIndex = 0;
 
@@ -164,5 +208,5 @@ templ playground() {
 }
 
 templ Playground() {
-	@Base(playground())
+@Base(playground())
 }
