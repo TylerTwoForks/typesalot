@@ -66,7 +66,8 @@ templ playground() {
     let charCount = 0;
 
 
-    const sampleText = "sink think neck stack stink sneak snick snack knack tick thick niche ant east seat site sake shin skin hint sent ask skate snake taken knits skein aches chest cheat teach kite knit sane sect secta ink ski ace teens sheet heat satin hasten sake sink stake case sheik keen";
+    // const sampleText = "sink think neck stack stink sneak snick snack knack tick thick niche ant east seat site sake shin skin hint sent ask skate snake taken knits skein aches chest cheat teach kite knit sane sect secta ink ski ace teens sheet heat satin hasten sake sink stake case sheik keen";
+    const sampleText = "The quick brown fox jumps over a lazy dog while vexed wizards glaze bright jugs, packing five dozen liquor bottles quietly before Jack amazed them with extra flying zebras near icy hills." 
     const words = shuffleArray([...sampleText.split(' ')]);
 
     inputField.addEventListener("focus", () => {
@@ -99,11 +100,8 @@ templ playground() {
     }
 
     function handleKeyDown(e) {
-        wpmCounter();
+        wpmCounter();//start counter 
         if (e.ctrlKey || e.metaKey || e.altKey) return;
-        console.log("event.code():: ", e.code)
-        console.log("event.code():: ", e.key)
-        console.log("event.code():: ", e.keyCode)
 
         // Detect shift key down
         if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
@@ -133,9 +131,6 @@ templ playground() {
             clearTimeout(shiftTapTimer);
 
             if (!shiftWasHeld) {
-                // Shift was tapped → do something special (or nothing)
-                // Example: add literal '^' or some mapped char
-                // inputField.value += '^'; // optional tap-character
                 inputField.value += qwertyToHDP[e.code]
             }
 

@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/TylerTwoForks/typesalot/internal/db"
 	"github.com/TylerTwoForks/typesalot/internal/webserver"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
@@ -20,6 +24,20 @@ func main() {
 		zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339},
 	).Level(zerolog.TraceLevel).With().Timestamp().Caller().Logger()
 
+	conn, err := sql.Open("sqlite3", "./mydb.sqlite")
+	if err != nil {
+		log.Logger.Fatal()
+	}
+
+	q := db.New(conn)
+
+	users, err := q.ListUsers(ctx())
+	if err != nil {
+		log.Logger.Fatal().Msg(err.Error())
+	}
+
+	log.Logger.Info().Interface("users", users).Msg("Fetched users")
+
 	e := webserver.EchoServer()
 	e.Static("/assets", "web/assets")
 
@@ -30,6 +48,10 @@ func main() {
 	}()
 
 	gracefulShutdown(e)
+}
+
+func ctx() context.Context {
+	return context.TODO() // or use context.WithTimeout()
 }
 
 func gracefulShutdown(e *echo.Echo) {
